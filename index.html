@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Script & Speech Time Estimator — Free Speaking Time Calculator</title>
+<meta name="description" content="Instantly calculate how long your speech or script will take to deliver. Adjustable pace, live rehearsal mode, section breakdown, and reverse calculator. Free, no login." />
+<meta property="og:title" content="Script & Speech Time Estimator" />
+<meta property="og:description" content="Free tool to estimate speaking time, rehearse live, and break down your script by section." />
+<meta property="og:url" content="https://speechtimer.io" />
+<meta property="og:type" content="website" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎙</text></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#F7F5F0;
+  --surface:#EDEAE3;
+  --surface-2:#FFFFFF;
+  --border:#D6D2C9;
+  --text:#1A1918;
+  --text-2:#5C5952;
+  --muted:#6B6760;
+  --accent:#1A6B4A;
+  --accent-dim:rgba(26,107,74,0.08);
+  --accent-text:#FFFFFF;
+  --amber:#C77D1B;
+  --danger:#B4451F;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.05);
+}
+[data-theme="dark"]{
+  --bg:#0F1110;
+  --surface:#181D1B;
+  --surface-2:#131715;
+  --border:#252C29;
+  --text:#EDEAE3;
+  --text-2:#8A9490;
+  --muted:#808A86;
+  --accent:#34D399;
+  --accent-dim:rgba(52,211,153,0.10);
+  --accent-text:#0F1110;
+  --amber:#E0B057;
+  --danger:#EF6F4A;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;transition:background .2s,color .2s}
+body{min-height:100vh;padding:0 0 80px}
+.mono{font-family:'DM Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.serif{font-family:'DM Serif Display',serif;font-weight:400}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
+a{color:var(--accent)}
+
+/* Layout */
+.wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+header.site{display:flex;align-items:center;justify-content:space-between;padding:28px 0 12px;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .logo{width:40px;height:40px;border-radius:10px;background:var(--accent);color:var(--accent-text);display:grid;place-items:center;font-size:20px;box-shadow:var(--shadow)}
+.brand h1{font-family:'DM Serif Display',serif;font-weight:400;font-size:22px;line-height:1.1}
+.brand p{font-size:13px;color:var(--text-2)}
+.theme-toggle{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid var(--border);border-radius:999px;background:var(--surface);font-size:13px;color:var(--text);transition:.2s}
+.theme-toggle:hover{border-color:var(--accent)}
+
+/* Hero */
+.hero{padding:32px 0 24px;border-bottom:1px solid var(--border)}
+.hero h2{font-family:'DM Serif Display',serif;font-size:clamp(34px,5vw,56px);line-height:1.05;letter-spacing:-.01em;max-width:820px}
+.hero p.sub{margin-top:14px;color:var(--text-2);font-size:clamp(15px,1.6vw,18px);max-width:640px}
+.wins{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px 20px;margin-top:24px;list-style:none;font-size:14px;color:var(--text-2)}
+.wins li{display:flex;gap:8px}
+.wins li b{color:var(--text);font-weight:500}
+
+/* Presets */
+.section{padding:28px 0}
+.section + .section{border-top:1px solid var(--border)}
+.section-title{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap}
+.section-title h3{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400}
+.section-title .hint{font-size:13px;color:var(--muted)}
+.presets{display:flex;flex-wrap:wrap;gap:8px}
+.preset{padding:9px 14px;border:1px solid var(--border);border-radius:999px;background:var(--surface);color:var(--text);font-size:13.5px;transition:.18s;display:inline-flex;align-items:center;gap:6px}
+.preset:hover{border-color:var(--accent);color:var(--accent)}
+.preset.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+
+/* Grid */
+.grid{display:grid;grid-template-columns:1.1fr 1fr;gap:24px;margin-top:8px}
+@media (max-width:880px){.grid{grid-template-columns:1fr}}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;box-shadow:var(--shadow);transition:background .2s,border-color .2s}
+.card h4{font-family:'DM Serif Display',serif;font-weight:400;font-size:18px;margin-bottom:14px}
+
+/* Textarea */
+.script-wrap{position:relative}
+textarea#script{width:100%;min-height:340px;resize:vertical;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:18px;font-size:16px;line-height:1.65;color:var(--text);outline:none;transition:border-color .2s,background .2s;font-family:'DM Sans',sans-serif}
+textarea#script:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+.stats{display:flex;flex-wrap:wrap;gap:18px;margin-top:14px;font-size:13px;color:var(--text-2);align-items:center}
+.stats .stat{display:inline-flex;gap:6px;align-items:baseline}
+.stats .stat b{color:var(--text);font-weight:500;font-family:'DM Mono',monospace}
+.clear-btn{margin-left:auto;font-size:13px;color:var(--text-2);padding:6px 12px;border:1px solid var(--border);border-radius:8px;background:transparent;transition:.18s}
+.clear-btn:hover{color:var(--danger);border-color:var(--danger)}
+
+/* Settings */
+.settings{display:grid;grid-template-columns:1fr;gap:18px;margin-bottom:18px}
+.field label{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;color:var(--text-2);margin-bottom:6px}
+.field label .val{font-family:'DM Mono',monospace;color:var(--text);font-size:14px}
+input[type=range]{width:100%;-webkit-appearance:none;appearance:none;background:transparent;height:32px}
+input[type=range]::-webkit-slider-runnable-track{height:6px;background:var(--border);border-radius:999px}
+input[type=range]::-moz-range-track{height:6px;background:var(--border);border-radius:999px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;background:var(--accent);border:3px solid var(--surface);margin-top:-8px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--accent);border:3px solid var(--surface);cursor:pointer}
+.slider-marks{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace}
+.stepper{display:inline-flex;align-items:center;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--surface-2)}
+.stepper button{padding:8px 14px;font-size:16px;color:var(--text);transition:.15s}
+.stepper button:hover{background:var(--accent-dim);color:var(--accent)}
+.stepper .num{padding:8px 14px;font-family:'DM Mono',monospace;min-width:64px;text-align:center;border-left:1px solid var(--border);border-right:1px solid var(--border)}
+.mode-toggle{display:inline-flex;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--surface-2)}
+.mode-toggle button{padding:8px 14px;font-size:13px;color:var(--text-2);transition:.15s}
+.mode-toggle button.active{background:var(--accent);color:var(--accent-text)}
+.tip{font-size:12.5px;color:var(--muted);margin-top:4px}
+
+/* Result cards */
+.results{display:grid;grid-template-columns:1fr 1.25fr 1fr;gap:12px;margin-top:8px}
+@media (max-width:560px){.results{grid-template-columns:1fr}}
+.rcard{border:1px solid var(--border);border-radius:14px;padding:18px;background:var(--surface-2);text-align:center;transition:.25s}
+.rcard.center{background:var(--accent);color:var(--accent-text);border-color:var(--accent);transform:scale(1.02)}
+.rcard .lbl{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.rcard.center .lbl{color:rgba(255,255,255,0.92)}
+[data-theme="dark"] .rcard.center .lbl{color:rgba(15,17,16,0.82)}
+.rcard .time{font-family:'DM Mono',monospace;font-size:34px;font-weight:500;margin:6px 0 8px;letter-spacing:-.02em}
+.rcard.center .time{font-size:42px}
+.rcard .wpm{font-size:12px;color:var(--text-2);font-family:'DM Mono',monospace}
+.rcard.center .wpm{color:rgba(255,255,255,.85)}
+[data-theme="dark"] .rcard.center .wpm{color:rgba(15,17,16,.75)}
+.rcard .bar{height:4px;background:var(--border);border-radius:999px;margin-top:12px;overflow:hidden}
+.rcard.center .bar{background:rgba(255,255,255,.25)}
+.rcard .bar > i{display:block;height:100%;background:var(--accent);border-radius:999px;transition:width .3s}
+.rcard.center .bar > i{background:#fff}
+.summary{margin-top:18px;padding:16px;border:1px dashed var(--text-2);border-radius:12px;color:var(--text-2);font-size:14.5px;line-height:1.55;opacity:0.9}
+.summary b{color:var(--text);font-weight:500}
+.copy-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:10px;font-size:14px;font-weight:500;transition:.18s;border:1px solid transparent}
+.btn-primary{background:var(--accent);color:var(--accent-text)}
+.btn-primary:hover{filter:brightness(1.05)}
+.btn-ghost{border-color:var(--border);color:var(--text);background:var(--surface-2)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn.copied{background:#1A6B4A;color:#fff}
+
+/* Collapsibles */
+details.panel{border:1px solid var(--border);border-radius:14px;background:var(--surface);overflow:hidden;margin-top:18px}
+details.panel summary{list-style:none;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-family:'DM Serif Display',serif;font-size:18px;transition:background .15s}
+details.panel summary::-webkit-details-marker{display:none}
+details.panel summary:hover{background:var(--accent-dim)}
+details.panel summary .chev{transition:transform .25s;color:var(--text-2)}
+details.panel[open] summary .chev{transform:rotate(180deg)}
+.panel-body{padding:0 22px 22px;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:10px 8px;text-align:left;border-bottom:1px solid var(--border)}
+th{font-weight:500;color:var(--text-2);font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+td.num,th.num{font-family:'DM Mono',monospace;text-align:right}
+tbody tr.highlight{background:var(--accent-dim)}
+.minibar{height:6px;background:var(--border);border-radius:999px;overflow:hidden;min-width:60px}
+.minibar > i{display:block;height:100%;background:var(--accent)}
+
+/* Reverse calc */
+.rev-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:560px){.rev-grid{grid-template-columns:1fr}}
+input[type=text].txt,input[type=number].txt{width:100%;padding:11px 14px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);font-family:'DM Mono',monospace;font-size:15px;outline:none;transition:.15s}
+input.txt:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+.gauge{margin-top:18px}
+.gauge .track{height:10px;background:var(--border);border-radius:999px;position:relative;overflow:visible}
+.gauge .range{position:absolute;top:0;bottom:0;background:var(--accent-dim);border-radius:999px}
+.gauge .target{position:absolute;top:-4px;width:4px;height:18px;background:var(--accent);border-radius:2px;transform:translateX(-50%)}
+.gauge .labels{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:8px;font-family:'DM Mono',monospace}
+.rev-summary{margin-top:14px;font-size:14.5px;color:var(--text-2)}
+
+/* Rehearse button */
+.rehearse-cta{display:flex;justify-content:center;padding:24px 0}
+.btn-rehearse{padding:18px 36px;font-size:17px;font-weight:600;background:var(--accent);color:var(--accent-text);border-radius:14px;display:inline-flex;align-items:center;gap:10px;box-shadow:0 8px 24px var(--accent-dim);transition:.2s}
+.btn-rehearse:hover{transform:translateY(-2px);box-shadow:0 12px 32px var(--accent-dim)}
+
+/* Rehearsal overlay */
+.rehearsal{position:fixed;inset:0;background:#080C0A;color:#EDEAE3;z-index:50;display:none;flex-direction:column;padding:0}
+.rehearsal.on{display:flex}
+.rehearsal .progress{height:4px;background:rgba(255,255,255,.08);position:relative}
+.rehearsal .progress > i{display:block;height:100%;background:#34D399;transition:width .3s,background .3s;width:0%}
+.rehearsal .topbar{display:flex;align-items:center;justify-content:space-between;padding:20px 28px;gap:16px;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,.06)}
+.rehearsal .countdown{font-family:'DM Mono',monospace;font-size:64px;font-weight:500;letter-spacing:-.02em;color:#34D399;transition:color .3s}
+.rehearsal .pace{font-size:13px;color:#8A9490;font-family:'DM Mono',monospace;text-align:right}
+.rehearsal .pace b{color:#EDEAE3;font-weight:500}
+.rehearsal .controls{display:flex;gap:10px}
+.rehearsal .controls button{padding:10px 18px;border-radius:10px;background:rgba(255,255,255,.06);color:#EDEAE3;font-size:14px;transition:.15s}
+.rehearsal .controls button:hover{background:rgba(52,211,153,.18);color:#34D399}
+.rehearsal .controls .end{background:rgba(180,69,31,.18);color:#ef9b80}
+.rehearsal .script-view{flex:1;overflow:auto;padding:48px 24px}
+.rehearsal .script-view .inner{max-width:680px;margin:0 auto;font-family:'DM Serif Display',serif;font-size:22px;line-height:1.8;white-space:pre-wrap;text-align:left}
+.rehearsal.amber .countdown{color:#E0B057}
+.rehearsal.amber .progress > i{background:#E0B057}
+.rehearsal.over .countdown{color:#EF6F4A}
+.rehearsal.over .progress > i{background:#EF6F4A}
+@media (max-width:640px){
+  .rehearsal .countdown{font-size:96px}
+  .rehearsal .topbar{padding:16px}
+  .rehearsal .pace{display:none}
+  .rehearsal .script-view .inner{font-size:18px;line-height:1.7}
+}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--bg);padding:12px 20px;border-radius:10px;font-size:13px;opacity:0;transition:.3s;z-index:60;pointer-events:none;box-shadow:var(--shadow)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Footer */
+footer{text-align:center;padding:40px 24px 0;color:var(--muted);font-size:13px}
+
+code{font-family:'DM Mono',monospace;font-size:0.875em;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--text)}
+/* Empty / warning state */
+.empty{text-align:center;padding:30px 16px;color:var(--muted);font-size:14px}
+.warn{margin-top:12px;padding:10px 14px;background:var(--accent-dim);color:var(--accent);border-radius:10px;font-size:13px}
+
+/* Restore notice */
+.restore-notice{position:fixed;top:20px;right:20px;background:var(--surface);border:1px solid var(--border);padding:10px 16px;border-radius:10px;font-size:13px;color:var(--text-2);box-shadow:var(--shadow);opacity:0;transform:translateY(-10px);transition:.3s;z-index:40;pointer-events:none}
+.restore-notice.show{opacity:1;transform:none}
+
+/* Rehearsal summary */
+.summary-box{margin-top:18px;padding:16px;border:1px solid var(--accent);border-radius:12px;background:var(--accent-dim);font-size:14px;color:var(--text);display:none}
+.summary-box.show{display:block}
+.summary-box .row{display:flex;justify-content:space-between;padding:4px 0;font-family:'DM Mono',monospace}
+.summary-box .row span:first-child{color:var(--text-2);font-family:'DM Sans',sans-serif}
+</style>
+</head>
+<body>
+
+<div class="restore-notice" id="restoreNotice">✨ Your last script has been restored</div>
+
+<div class="wrap">
+  <header class="site">
+    <div class="brand">
+      <div class="logo">🎙</div>
+      <div>
+        <h1>Script Timer</h1>
+        <p>Speech &amp; reading time, instantly.</p>
+      </div>
+    </div>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+      <span id="themeIcon">☾</span><span id="themeLabel">Dark</span>
+    </button>
+  </header>
+
+  <section class="hero">
+    <h2>How long will your speech take?</h2>
+    <p class="sub">Paste your script and know instantly. No guessing, no surprises.</p>
+    <ul class="wins">
+      <li>⚡ <span><b>Live timing</b> the moment you paste</span></li>
+      <li>🎯 <span><b>Audience-matched</b> pace presets</span></li>
+      <li>🎙 <span><b>Rehearse live</b> &amp; track actual pace</span></li>
+      <li>📋 <span><b>Copy &amp; share</b> a clean summary</span></li>
+      <li>💾 <span><b>Auto-saves</b> — pick up where you left off</span></li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-title">
+      <h3>Choose a use case</h3>
+      <span class="hint">Sets pace &amp; pause time for the context</span>
+    </div>
+    <div class="presets" id="presets"></div>
+  </section>
+
+  <section class="section">
+    <div class="grid">
+      <!-- LEFT -->
+      <div class="card">
+        <h4>Your script</h4>
+        <div class="script-wrap">
+          <textarea id="script" placeholder="Paste your script here and see your speaking time instantly…" spellcheck="false"></textarea>
+        </div>
+        <div class="stats">
+          <span class="stat">Words <b id="stWords">0</b></span>
+          <span class="stat">Characters <b id="stChars">0</b></span>
+          <span class="stat">Sentences <b id="stSent">0</b></span>
+          <span class="stat">Paragraphs <b id="stPara">0</b></span>
+          <button class="clear-btn" id="clearBtn">Clear</button>
+        </div>
+        <div id="warnLong" class="warn" style="display:none">That's a long script! Consider breaking it into sections using <code>---</code>.</div>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="card">
+        <h4>Settings</h4>
+        <div class="settings">
+          <div class="field">
+            <label>Speaking pace <span class="val"><span id="wpmVal">140</span> WPM</span></label>
+            <input type="range" id="wpm" min="80" max="220" step="1" value="140" />
+            <div class="slider-marks"><span>Slow · 110</span><span>Avg · 140</span><span>Fast · 170</span></div>
+          </div>
+          <div class="field">
+            <label>Pause &amp; emphasis time <span class="val"><span id="pauseVal">10</span>%</span></label>
+            <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+              <div class="stepper">
+                <button id="pauseMinus" aria-label="Decrease pause">−</button>
+                <span class="num"><span id="pauseNum">10</span>%</span>
+                <button id="pausePlus" aria-label="Increase pause">+</button>
+              </div>
+              <span class="tip" title="Accounts for natural pauses, emphasis & audience reactions">Accounts for natural pauses &amp; audience reactions</span>
+            </div>
+          </div>
+          <div class="field">
+            <label>Mode</label>
+            <div class="mode-toggle" id="modeToggle">
+              <button class="active" data-mode="speak">🎤 Speaking</button>
+              <button data-mode="read">📖 Reading</button>
+            </div>
+            <div class="tip" id="modeTip">Speaking time uses your selected WPM.</div>
+          </div>
+        </div>
+
+        <h4 style="margin-top:8px">Estimated time</h4>
+        <div class="results">
+          <div class="rcard" id="rSlow">
+            <div class="lbl">Slow pace</div>
+            <div class="time mono" id="tSlow">0:00</div>
+            <div class="wpm"><span id="wSlow">120</span> WPM</div>
+            <div class="bar"><i style="width:60%"></i></div>
+          </div>
+          <div class="rcard center" id="rMid">
+            <div class="lbl">Your pace</div>
+            <div class="time mono" id="tMid">0:00</div>
+            <div class="wpm"><span id="wMid">140</span> WPM</div>
+            <div class="bar"><i style="width:75%"></i></div>
+          </div>
+          <div class="rcard" id="rFast">
+            <div class="lbl">Fast pace</div>
+            <div class="time mono" id="tFast">0:00</div>
+            <div class="wpm"><span id="wFast">160</span> WPM</div>
+            <div class="bar"><i style="width:90%"></i></div>
+          </div>
+        </div>
+
+        <div class="summary" id="summary">Paste your script above to see your speaking time.</div>
+
+        <div class="copy-row">
+          <button class="btn btn-primary" id="copyBtn">📋 Copy result</button>
+          <button class="btn btn-ghost" id="rehearseBtn2">▶ Rehearse</button>
+        </div>
+        <div class="summary-box" id="rehearseSummary"></div>
+      </div>
+    </div>
+  </section>
+
+  <details class="panel" id="breakdownPanel">
+    <summary><span>Section breakdown</span><span class="chev">▾</span></summary>
+    <div class="panel-body" id="breakdownBody">
+      <p class="empty" id="breakdownEmpty">Add <code>---</code> on its own line between sections to see a time breakdown per section.</p>
+      <table id="breakdownTable" style="display:none">
+        <thead><tr><th>#</th><th>Section</th><th class="num">Words</th><th class="num">Time</th><th>Share</th></tr></thead>
+        <tbody id="breakdownRows"></tbody>
+      </table>
+    </div>
+  </details>
+
+  <details class="panel">
+    <summary><span>How many words do I need?</span><span class="chev">▾</span></summary>
+    <div class="panel-body">
+      <div class="rev-grid">
+        <div class="field">
+          <label>Target duration <span class="val mono">MM:SS</span></label>
+          <input type="text" id="revTime" class="txt" value="05:00" inputmode="numeric" />
+        </div>
+        <div class="field">
+          <label>Speaking pace <span class="val"><span id="revWpmLabel">140</span> WPM</span></label>
+          <input type="number" id="revWpm" class="txt" value="140" min="80" max="220" />
+        </div>
+      </div>
+      <div class="gauge">
+        <div class="track">
+          <div class="range" id="revRange"></div>
+          <div class="target" id="revTarget" style="left:50%"></div>
+        </div>
+        <div class="labels"><span id="revMin">0</span><span id="revTargetLbl">0 words</span><span id="revMax">0</span></div>
+      </div>
+      <div class="rev-summary" id="revSummary">Enter a target duration to see how many words you need.</div>
+    </div>
+  </details>
+
+  <div class="rehearse-cta">
+    <button class="btn-rehearse" id="rehearseBtn">▶ Start live rehearsal</button>
+  </div>
+
+  <details class="panel">
+    <summary><span>Word-to-time cheat sheet</span><span class="chev">▾</span></summary>
+    <div class="panel-body">
+      <table>
+        <thead><tr><th class="num">Words</th><th class="num">Slow · 110</th><th class="num">Average · 140</th><th class="num">Fast · 170</th></tr></thead>
+        <tbody id="cheatBody"></tbody>
+      </table>
+      <p class="tip" style="margin-top:10px">Reading-time research baseline: 238 WPM (Brysbaert, 2019).</p>
+    </div>
+  </details>
+
+  <footer>Free · No login required · Works offline</footer>
+</div>
+
+<!-- Rehearsal overlay -->
+<div class="rehearsal" id="rehearsal" aria-hidden="true">
+  <div class="progress"><i id="rProg"></i></div>
+  <div class="topbar">
+    <div class="countdown mono" id="rCountdown">0:00</div>
+    <div class="pace" id="rPace">Speaking at <b>—</b> WPM</div>
+    <div class="controls">
+      <button id="rPause">⏸ Pause</button>
+      <button id="rEnd" class="end">■ End</button>
+    </div>
+  </div>
+  <div class="script-view"><div class="inner" id="rScript"></div></div>
+</div>
+
+<div class="toast" id="toast">Copied!</div>
+
+<script>
+(function(){
+  // ---------- Constants ----------
+  const PRESETS = [
+    {id:'ted',     label:'🎤 TED Talk',       wpm:163, pause:10},
+    {id:'youtube', label:'📺 YouTube',        wpm:150, pause:5},
+    {id:'podcast', label:'🎙 Podcast',         wpm:155, pause:8},
+    {id:'wedding', label:'💍 Wedding Speech', wpm:120, pause:15},
+    {id:'business',label:'📊 Business Preso', wpm:140, pause:12},
+    {id:'lecture', label:'🎓 Lecture',         wpm:125, pause:10},
+    {id:'custom',  label:'⚡ Custom',          wpm:null,pause:null},
+  ];
+  const SAMPLE = `Welcome — and thank you for being here today.
+
+I want to start with a question I've been asking myself a lot lately: what would you do if you knew it would work? Not someday, not maybe, but actually work. Most of us never get to ask that question, because we're too busy worrying about whether we're using the right words, the right pace, or the right tone.
+
+That's exactly why this tool exists. Paste your script, pick your audience, and you'll know — to the second — how long your talk will run. Then hit rehearse and we'll keep time with you while you find your voice.
+
+Whether you're prepping a five-minute pitch or a twenty-minute keynote, the answer is right here. No login, no fluff. Just the time you need.`;
+
+  const LS = {
+    script:'sst_script', preset:'sst_preset', wpm:'sst_wpm',
+    pause:'sst_pause', mode:'sst_mode', theme:'sst_theme'
+  };
+
+  // ---------- State ----------
+  const state = {
+    wpm:140, pause:10, mode:'speak', preset:'business',
+  };
+
+  // ---------- Theme ----------
+  function applyTheme(t){
+    document.documentElement.setAttribute('data-theme', t);
+    document.getElementById('themeIcon').textContent = t==='dark' ? '☀' : '☾';
+    document.getElementById('themeLabel').textContent = t==='dark' ? 'Light' : 'Dark';
+    localStorage.setItem(LS.theme, t);
+  }
+  (function initTheme(){
+    const saved = localStorage.getItem(LS.theme);
+    if(saved){ applyTheme(saved); }
+    else if(window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches){ applyTheme('dark'); }
+    else applyTheme('light');
+  })();
+  document.getElementById('themeToggle').addEventListener('click', ()=>{
+    const cur = document.documentElement.getAttribute('data-theme');
+    applyTheme(cur==='dark' ? 'light' : 'dark');
+  });
+
+  // ---------- Helpers ----------
+  function countWords(s){ const m = s.trim().match(/\S+/g); return m ? m.length : 0; }
+  function countSentences(s){ const m = s.match(/[^.!?]+[.!?]+(\s|$)/g); return m ? m.length : (s.trim()? 1:0); }
+  function countParagraphs(s){ const arr = s.split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean); return arr.length; }
+  function fmt(seconds){
+    seconds = Math.max(0, Math.round(seconds));
+    const m = Math.floor(seconds/60), s = seconds%60;
+    return m+':'+String(s).padStart(2,'0');
+  }
+  function fmtPlain(seconds){
+    seconds = Math.max(0, Math.round(seconds));
+    const m = Math.floor(seconds/60), s = seconds%60;
+    if(m===0) return s+' seconds';
+    if(s===0) return m+' minute'+(m!==1?'s':'');
+    return m+' minute'+(m!==1?'s':'')+' and '+s+' second'+(s!==1?'s':'');
+  }
+  function timeFor(words, wpm, pausePct){
+    if(!words || !wpm) return 0;
+    const base = (words/wpm)*60;
+    return base * (1 + (pausePct||0)/100);
+  }
+  function effectiveWpm(){
+    return state.mode==='read' ? 238 : state.wpm;
+  }
+  function parseMMSS(v){
+    const m = String(v||'').trim().match(/^(\d{1,3}):(\d{1,2})$/);
+    if(!m) return null;
+    const mm = parseInt(m[1],10), ss = parseInt(m[2],10);
+    if(ss>59) return null;
+    return mm*60+ss;
+  }
+
+  // ---------- Presets bar ----------
+  const presetsEl = document.getElementById('presets');
+  PRESETS.forEach(p=>{
+    const b = document.createElement('button');
+    b.className='preset'; b.textContent=p.label; b.dataset.id=p.id;
+    b.addEventListener('click', ()=>{
+      if(p.id==='custom') { setPreset('custom'); return; }
+      state.wpm = p.wpm; state.pause = p.pause;
+      document.getElementById('wpm').value = p.wpm;
+      document.getElementById('wpmVal').textContent = p.wpm;
+      document.getElementById('pauseVal').textContent = p.pause;
+      document.getElementById('pauseNum').textContent = p.pause;
+      setPreset(p.id);
+      save(); update();
+    });
+    presetsEl.appendChild(b);
+  });
+  function setPreset(id){
+    state.preset = id;
+    [...presetsEl.children].forEach(c=>c.classList.toggle('active', c.dataset.id===id));
+  }
+
+  // ---------- Settings wiring ----------
+  const wpmEl = document.getElementById('wpm');
+  const wpmVal = document.getElementById('wpmVal');
+  wpmEl.addEventListener('input', ()=>{
+    state.wpm = parseInt(wpmEl.value,10);
+    wpmVal.textContent = state.wpm;
+    // changing slider = custom unless matches a preset exactly
+    const match = PRESETS.find(p=>p.wpm===state.wpm && p.pause===state.pause);
+    setPreset(match ? match.id : 'custom');
+    save(); update();
+  });
+
+  function setPause(v){
+    v = Math.max(0, Math.min(30, v));
+    v = Math.round(v/5)*5;
+    state.pause = v;
+    document.getElementById('pauseVal').textContent = v;
+    document.getElementById('pauseNum').textContent = v;
+    const match = PRESETS.find(p=>p.wpm===state.wpm && p.pause===state.pause);
+    setPreset(match ? match.id : 'custom');
+    save(); update();
+  }
+  document.getElementById('pauseMinus').addEventListener('click', ()=>setPause(state.pause-5));
+  document.getElementById('pausePlus').addEventListener('click', ()=>setPause(state.pause+5));
+
+  document.querySelectorAll('#modeToggle button').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      state.mode = b.dataset.mode;
+      document.querySelectorAll('#modeToggle button').forEach(x=>x.classList.toggle('active', x===b));
+      document.getElementById('modeTip').textContent = state.mode==='read'
+        ? 'Reading time uses 238 WPM (Brysbaert, 2019 research standard).'
+        : 'Speaking time uses your selected WPM.';
+      save(); update();
+    });
+  });
+
+  // ---------- Script input ----------
+  const scriptEl = document.getElementById('script');
+  let clearPending = false;
+  document.getElementById('clearBtn').addEventListener('click', (e)=>{
+    if(!clearPending){
+      clearPending = true;
+      e.target.textContent='Click again to clear';
+      setTimeout(()=>{ clearPending=false; e.target.textContent='Clear';},2500);
+      return;
+    }
+    scriptEl.value=''; clearPending=false; e.target.textContent='Clear';
+    save(); update();
+  });
+  scriptEl.addEventListener('input', ()=>{ save(); update(); });
+
+  // ---------- Update render ----------
+  function update(){
+    const text = scriptEl.value;
+    const words = countWords(text);
+    document.getElementById('stWords').textContent = words.toLocaleString();
+    document.getElementById('stChars').textContent = text.length.toLocaleString();
+    document.getElementById('stSent').textContent = countSentences(text);
+    document.getElementById('stPara').textContent = countParagraphs(text);
+    document.getElementById('warnLong').style.display = words>10000 ? 'block' : 'none';
+
+    const wpm = effectiveWpm();
+    const slow = Math.max(80, wpm-20), fast = wpm+20;
+    const tMid = timeFor(words, wpm, state.pause);
+    const tSlow = timeFor(words, slow, state.pause);
+    const tFast = timeFor(words, fast, state.pause);
+
+    document.getElementById('tMid').textContent = fmt(tMid);
+    document.getElementById('tSlow').textContent = fmt(tSlow);
+    document.getElementById('tFast').textContent = fmt(tFast);
+    document.getElementById('wMid').textContent = wpm;
+    document.getElementById('wSlow').textContent = slow;
+    document.getElementById('wFast').textContent = fast;
+
+    // Bars relative to a 30 min benchmark
+    const ref = 30*60;
+    document.querySelector('#rSlow .bar > i').style.width = Math.min(100, (tSlow/ref)*100)+'%';
+    document.querySelector('#rMid .bar > i').style.width = Math.min(100, (tMid/ref)*100)+'%';
+    document.querySelector('#rFast .bar > i').style.width = Math.min(100, (tFast/ref)*100)+'%';
+
+    // Summary
+    const sum = document.getElementById('summary');
+    if(words===0){
+      sum.innerHTML = 'Paste your script above to see your speaking time.';
+    } else {
+      const paceLabel = state.mode==='read' ? 'reading pace' : 'a conversational pace';
+      sum.innerHTML = `Your <b>${words.toLocaleString()}-word</b> script will take approximately <b>${fmtPlain(tMid)}</b> to deliver at ${paceLabel} (<b>${wpm} WPM</b>) including <b>${state.pause}%</b> pauses.`;
+    }
+
+    // Title
+    document.title = words>0
+      ? `${words.toLocaleString()} words · ${fmt(tMid)} — Script Timer`
+      : 'Script & Speech Time Estimator — Free Speaking Time Calculator';
+
+    updateBreakdown(text, wpm);
+    updateReverse();
+    highlightCheat(words);
+  }
+
+  // ---------- Section breakdown ----------
+  function updateBreakdown(text, wpm){
+    const rows = document.getElementById('breakdownRows');
+    const empty = document.getElementById('breakdownEmpty');
+    const table = document.getElementById('breakdownTable');
+    rows.innerHTML='';
+    if(!text.includes('---')){
+      empty.style.display='block'; table.style.display='none'; return;
+    }
+    const sections = text.split(/^\s*---\s*$/m).map(s=>s.trim()).filter(Boolean);
+    if(sections.length<=1){
+      empty.style.display='block'; table.style.display='none'; return;
+    }
+    empty.style.display='none'; table.style.display='table';
+    let totalW=0, totalT=0;
+    const data = sections.map(s=>{
+      const w = countWords(s);
+      const t = timeFor(w, wpm, state.pause);
+      totalW+=w; totalT+=t;
+      return {label:s.slice(0,40).replace(/\s+/g,' '), w, t};
+    });
+    data.forEach((d,i)=>{
+      const pct = totalT? (d.t/totalT)*100 : 0;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td class="num">${i+1}</td>
+        <td>${d.label||'(empty)'}${d.label.length>=40?'…':''}</td>
+        <td class="num">${d.w}</td>
+        <td class="num">${fmt(d.t)}</td>
+        <td><div class="minibar"><i style="width:${pct.toFixed(1)}%"></i></div></td>`;
+      rows.appendChild(tr);
+    });
+    const tot = document.createElement('tr');
+    tot.style.fontWeight='600';
+    tot.innerHTML = `<td></td><td>Total</td><td class="num">${totalW}</td><td class="num">${fmt(totalT)}</td><td></td>`;
+    rows.appendChild(tot);
+  }
+
+  // ---------- Reverse calc ----------
+  const revTime = document.getElementById('revTime');
+  const revWpm = document.getElementById('revWpm');
+  revTime.addEventListener('input', updateReverse);
+  revWpm.addEventListener('input', updateReverse);
+  function updateReverse(){
+    document.getElementById('revWpmLabel').textContent = revWpm.value || effectiveWpm();
+    const secs = parseMMSS(revTime.value);
+    const wpm = parseInt(revWpm.value,10) || effectiveWpm();
+    const sum = document.getElementById('revSummary');
+    if(!secs || !wpm){
+      sum.textContent = 'Enter target duration as MM:SS (e.g. 05:00).';
+      document.getElementById('revRange').style.left='0';
+      document.getElementById('revRange').style.width='0';
+      return;
+    }
+    const adj = 1 + state.pause/100;
+    const target = Math.round((secs/60)*wpm / adj);
+    const minW = Math.round((secs/60)*(wpm+20) / adj); // fast pace = fewer words
+    const maxW = Math.round((secs/60)*(wpm-20) / adj); // slow pace = more words
+    const lo = Math.min(minW,maxW), hi = Math.max(minW,maxW);
+    document.getElementById('revMin').textContent = lo+' words';
+    document.getElementById('revMax').textContent = hi+' words';
+    document.getElementById('revTargetLbl').textContent = target+' words';
+    // gauge range
+    const span = hi-lo || 1;
+    const r = document.getElementById('revRange');
+    r.style.left='0%'; r.style.width='100%';
+    const t = document.getElementById('revTarget');
+    t.style.left = (((target-lo)/span)*100).toFixed(1)+'%';
+    sum.innerHTML = `For a <b>${fmt(secs)}</b> talk at <b>${wpm} WPM</b>, aim for <b>${lo}–${hi} words</b> (≈ ${target}).`;
+  }
+
+  // ---------- Cheat sheet ----------
+  const CHEAT = [100,250,500,750,1000,1500,2000,3000];
+  function buildCheat(){
+    const tb = document.getElementById('cheatBody');
+    tb.innerHTML='';
+    CHEAT.forEach(w=>{
+      const tr=document.createElement('tr');
+      tr.dataset.words=w;
+      tr.innerHTML = `<td class="num">${w}</td><td class="num">${fmt((w/110)*60)}</td><td class="num">${fmt((w/140)*60)}</td><td class="num">${fmt((w/170)*60)}</td>`;
+      tb.appendChild(tr);
+    });
+  }
+  function highlightCheat(words){
+    const rows = document.querySelectorAll('#cheatBody tr');
+    let best=null, bestD=Infinity;
+    rows.forEach(r=>{
+      r.classList.remove('highlight');
+      const d = Math.abs(parseInt(r.dataset.words,10)-words);
+      if(d<bestD){bestD=d;best=r;}
+    });
+    if(best && words>0) best.classList.add('highlight');
+  }
+  buildCheat();
+
+  // ---------- Copy ----------
+  document.getElementById('copyBtn').addEventListener('click', async (e)=>{
+    const text = document.getElementById('summary').textContent.trim();
+    try{
+      await navigator.clipboard.writeText(text);
+    }catch(_){
+      const ta = document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+    }
+    const btn = e.currentTarget;
+    const orig = btn.innerHTML;
+    btn.classList.add('copied');
+    btn.innerHTML = '✓ Copied!';
+    setTimeout(()=>{ btn.classList.remove('copied'); btn.innerHTML = orig; }, 2000);
+  });
+
+  // ---------- Toast ----------
+  function toast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(()=>t.classList.remove('show'), 1800);
+  }
+
+  // ---------- Rehearsal ----------
+  const reh = document.getElementById('rehearsal');
+  const rCountdown = document.getElementById('rCountdown');
+  const rProg = document.getElementById('rProg');
+  const rPace = document.getElementById('rPace');
+  const rScript = document.getElementById('rScript');
+  const rPauseBtn = document.getElementById('rPause');
+  let rTimer=null, rStart=0, rPaused=false, rElapsedBeforePause=0, rTotal=0, rWords=0;
+
+  function startRehearsal(){
+    const text = scriptEl.value.trim();
+    if(!text){ toast('Paste a script first'); return; }
+    rWords = countWords(text);
+    rTotal = timeFor(rWords, effectiveWpm(), state.pause);
+    if(rTotal<=0){ toast('Need words to rehearse'); return; }
+    rScript.textContent = text;
+    reh.classList.remove('amber','over'); reh.classList.add('on');
+    reh.setAttribute('aria-hidden','false');
+    rStart = Date.now(); rPaused=false; rElapsedBeforePause=0;
+    rPauseBtn.textContent='⏸ Pause';
+    tick();
+    rTimer = setInterval(tick, 200);
+    document.getElementById('rehearseSummary').classList.remove('show');
+  }
+  function elapsed(){
+    if(rPaused) return rElapsedBeforePause;
+    return rElapsedBeforePause + (Date.now()-rStart)/1000;
+  }
+  function tick(){
+    const e = elapsed();
+    const remain = rTotal - e;
+    const pct = Math.min(100, (e/rTotal)*100);
+    rProg.style.width = pct+'%';
+    reh.classList.toggle('amber', pct>=80 && pct<100);
+    reh.classList.toggle('over', e>rTotal);
+    rCountdown.textContent = remain>=0 ? fmt(remain) : '+'+fmt(-remain);
+    // actual pace
+    if(e>3){
+      const projWords = rWords; // assumes whole script
+      const actualWpm = Math.round((projWords/e)*60 / (1+state.pause/100));
+      const diff = actualWpm - effectiveWpm();
+      const arrow = diff>0 ? '▲' : (diff<0 ? '▼' : '•');
+      rPace.innerHTML = `Speaking at <b>~${actualWpm}</b> WPM &nbsp; ${arrow} ${Math.abs(diff)} vs estimate`;
+    } else {
+      rPace.innerHTML = 'Speaking at <b>—</b> WPM';
+    }
+  }
+  function pauseRehearsal(){
+    if(rPaused){
+      rPaused=false; rStart=Date.now(); rPauseBtn.textContent='⏸ Pause';
+    } else {
+      rPaused=true; rElapsedBeforePause = elapsed(); rPauseBtn.textContent='▶ Resume';
+    }
+  }
+  function endRehearsal(){
+    clearInterval(rTimer); rTimer=null;
+    const actualSec = elapsed();
+    reh.classList.remove('on'); reh.setAttribute('aria-hidden','true');
+    // summary
+    const actualWpm = Math.round((rWords/actualSec)*60 / (1+state.pause/100));
+    const diff = actualSec - rTotal;
+    const sign = diff>=0 ? 'over' : 'under';
+    const box = document.getElementById('rehearseSummary');
+    box.innerHTML = `
+      <div class="row"><span>Estimated time</span><b>${fmt(rTotal)}</b></div>
+      <div class="row"><span>Actual time</span><b>${fmt(actualSec)}</b></div>
+      <div class="row"><span>Actual pace</span><b>${actualWpm} WPM</b></div>
+      <div class="row"><span>${sign==='over'?'Over by':'Under by'}</span><b>${fmt(Math.abs(diff))}</b></div>`;
+    box.classList.add('show');
+    box.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+  document.getElementById('rehearseBtn').addEventListener('click', ()=>{
+    startRehearsal();
+  });
+  document.getElementById('rehearseBtn2').addEventListener('click', startRehearsal);
+  rPauseBtn.addEventListener('click', pauseRehearsal);
+  document.getElementById('rEnd').addEventListener('click', endRehearsal);
+  document.addEventListener('keydown', (e)=>{
+    if(!reh.classList.contains('on')) return;
+    if(e.code==='Space'){ e.preventDefault(); pauseRehearsal(); }
+    if(e.code==='Escape'){ endRehearsal(); }
+  });
+
+  // ---------- Persistence ----------
+  function save(){
+    localStorage.setItem(LS.script, scriptEl.value);
+    localStorage.setItem(LS.preset, state.preset);
+    localStorage.setItem(LS.wpm, state.wpm);
+    localStorage.setItem(LS.pause, state.pause);
+    localStorage.setItem(LS.mode, state.mode);
+  }
+  function restore(){
+    const s = localStorage.getItem(LS.script);
+    const p = localStorage.getItem(LS.preset);
+    const w = localStorage.getItem(LS.wpm);
+    const pa = localStorage.getItem(LS.pause);
+    const m = localStorage.getItem(LS.mode);
+    let restored = false;
+    if(s !== null){
+      scriptEl.value = s; restored = !!s.trim();
+    } else {
+      scriptEl.value = SAMPLE;
+    }
+    if(w){ state.wpm = parseInt(w,10); document.getElementById('wpm').value=state.wpm; document.getElementById('wpmVal').textContent=state.wpm; }
+    if(pa){ state.pause = parseInt(pa,10); document.getElementById('pauseVal').textContent=state.pause; document.getElementById('pauseNum').textContent=state.pause; }
+    if(m){ state.mode = m;
+      document.querySelectorAll('#modeToggle button').forEach(b=>b.classList.toggle('active', b.dataset.mode===m));
+      document.getElementById('modeTip').textContent = m==='read'
+        ? 'Reading time uses 238 WPM (Brysbaert, 2019 research standard).'
+        : 'Speaking time uses your selected WPM.';
+    }
+    setPreset(p || 'business');
+    if(restored){
+      const n = document.getElementById('restoreNotice');
+      n.classList.add('show');
+      setTimeout(()=>n.classList.remove('show'), 3000);
+    }
+  }
+
+  restore();
+  update();
+})();
+</script>
+</body>
+</html>
