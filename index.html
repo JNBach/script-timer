@@ -11,9 +11,9 @@
 </script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Speech Time Estimator — Free Script & Speaking Time Calculator</title>
-<meta name="description" content="Instantly calculate how long your speech or script will take to deliver. Adjustable pace, live rehearsal mode, section breakdown, and reverse calculator. Free, no login." />
-<meta property="og:title" content="Speech Time Estimator — Free Script & Speaking Time Calculator" /
+<title>Speech Time Estimator with Live Rehearsal — Free Script Timer</title>
+<meta name="description" content="Practice your speech live and know exactly how long it will take. Free speech time estimator with live rehearsal mode, adjustable pace, and section breakdown. No login required." />
+<meta property="og:title" content="Speech Time Estimator with Live Rehearsal — Free Script Timer" />
 <meta property="og:description" content="Free tool to estimate speaking time, rehearse live, and break down your script by section." />
 <meta property="og:url" content="https://speechtimeestimator.com" />
 <meta property="og:type" content="website" />
@@ -617,10 +617,7 @@ Whether you're prepping a five-minute pitch or a twenty-minute keynote, the answ
       sum.innerHTML = `Your <b>${words.toLocaleString()}-word</b> script will take approximately <b>${fmtPlain(tMid)}</b> to deliver at ${paceLabel} (<b>${wpm} WPM</b>) including <b>${state.pause}%</b> pauses.`;
     }
 
-    // Title
-    document.title = words>0
-      ? `${words.toLocaleString()} words · ${fmt(tMid)} — Script Timer`
-      : 'Script & Speech Time Estimator — Free Speaking Time Calculator';
+    // Title kept static for SEO — dynamic word count removed
 
     updateBreakdown(text, wpm);
     updateReverse();
